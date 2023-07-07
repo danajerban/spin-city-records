@@ -22,7 +22,6 @@ export default function CheckoutForm({ listing }: CheckoutFormProps) {
 
   const [payment, setPayment] = useState({ status: "initial" });
   const [errorMessage, setErrorMessage] = useState("");
-  const { handleSubmit, control } = useForm();
   const { currency } = useContext(CurrencyContext);
 
   const PaymentStatus = ({ status }: { status: string }) => {
@@ -51,14 +50,17 @@ export default function CheckoutForm({ listing }: CheckoutFormProps) {
     }
   };
 
-  const onSubmit = async () => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     if (!elements) return;
     setPayment({ status: "processing" });
 
     const { error } = await stripe!.confirmPayment({
       elements,
       confirmParams: {
-        return_url: "http://localhost:3000/order/",
+        return_url:
+          "https://spin-city-records-gamma.vercel.app//profile/myOrders",
       },
     });
 
@@ -71,7 +73,7 @@ export default function CheckoutForm({ listing }: CheckoutFormProps) {
   return (
     <form
       id="payment-form"
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={onSubmit}
       className="flex flex-col items-center"
     >
       <AddressElement
@@ -87,17 +89,14 @@ export default function CheckoutForm({ listing }: CheckoutFormProps) {
         }}
       />
       <button
-        className={`flex space-x-2 py-2 px-4 sm:my-8 sm:text-left md:text-xl xl:text-2xl
-          ${serif.className} h-fit items-center bg-black text-custom-orange border-2 border-custom-orange rounded-full
-          hover:bg-[#FF5500] hover:text-black
-          `}
+        className={`mx-4 flex w-fit flex-col items-center bg-white  p-2 text-black  hover:bg-[#FF5500] hover:text-white sm:my-8 sm:text-left md:text-lg xl:text-xl ${serif.className}`}
         type="submit"
         disabled={
           !["initial", "succeeded", "error"].includes(payment.status) || !stripe
         }
       >
         <h3 className="font-normal ">Pay</h3>
-        <span className="text-2xl font-black">
+        <span className="font-black md:text-lg xl:text-xl">
           {convertToGlobalCurrency(listing.price, listing.currency, currency)}{" "}
           {currency}
         </span>

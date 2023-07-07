@@ -123,16 +123,21 @@ export default function AlbumInfoCard({
 
   const handleClickWishlist = async () => {
     if (!user) {
-      toast.error("You must be logged in to add to your wishlist", {
+      toast.error("Please login or sign up", {
         position: "top-center",
         autoClose: 2000,
-        hideProgressBar: false,
+        hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: false,
         progress: undefined,
         theme: "dark",
       });
+      router
+        .push({
+          pathname: "/profile/wishlist",
+        })
+        .catch((e) => console.log(e));
       return;
     }
     if (collection) {
@@ -165,7 +170,7 @@ export default function AlbumInfoCard({
           pathname: "/profile/createListing",
         })
         .catch((e) => console.log(e));
-    } else if (!sellerChecking && user){
+    } else if (!sellerChecking && user) {
       router
         .push({
           pathname: "/profile/startSelling",
@@ -181,15 +186,14 @@ export default function AlbumInfoCard({
         progress: undefined,
         theme: "dark",
       });
-    }
-    else {
+    } else {
       router
-      .push({
-        pathname: "/profile/startSelling",
-      })
-      .catch((e) => console.log(e));
-  }
-};
+        .push({
+          pathname: "/profile/startSelling",
+        })
+        .catch((e) => console.log(e));
+    }
+  };
 
   const handleClickArtist = (album: Album) => {
     const normalizedArtist = album.artist.name.replace(/\s+/g, "-");
@@ -371,7 +375,7 @@ export default function AlbumInfoCard({
                 </button>
                 <button
                   onClick={handleClickCart}
-                  className={`mx-4 flex h-fit w-fit flex-col items-center rounded-2xl border-4 border-gray-900 bg-black p-2 text-gray-400 hover:border-gray-800 hover:bg-gray-800 hover:text-white sm:my-8 sm:text-left md:text-xl xl:text-2xl ${serif.className}`}
+                  className={`mx-4 flex  flex-col items-center bg-white  p-2 text-black  hover:bg-[#FF5500] hover:text-white sm:my-8 sm:text-left md:text-xl xl:text-2xl ${serif.className}`}
                 >
                   {isInCart ? "Remove from cart" : "Add to cart"}
                 </button>

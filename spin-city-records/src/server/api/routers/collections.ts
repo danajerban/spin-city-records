@@ -4,6 +4,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 
 export const collectionRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -24,6 +25,10 @@ export const collectionRouter = createTRPCRouter({
       return collections;
     } catch (e) {
       console.log(e);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch collections",
+      });
     }
   }),
 
@@ -50,9 +55,24 @@ export const collectionRouter = createTRPCRouter({
             },
           },
         });
+
+        if (!collection) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Collection with ID ${id} not found`,
+          });
+        }
+
         return collection;
       } catch (e) {
         console.log(e);
+        if (e instanceof TRPCError) {
+          throw e;
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch collection",
+        });
       }
     }),
 
@@ -84,6 +104,10 @@ export const collectionRouter = createTRPCRouter({
         return collections;
       } catch (e) {
         console.log(e);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch collections",
+        });
       }
     }),
 
@@ -106,6 +130,10 @@ export const collectionRouter = createTRPCRouter({
         return collection;
       } catch (e) {
         console.log(e);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create collection",
+        });
       }
     }),
 
@@ -132,6 +160,10 @@ export const collectionRouter = createTRPCRouter({
         return collection;
       } catch (e) {
         console.log(e);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to add album to collection",
+        });
       }
     }),
 
@@ -158,6 +190,10 @@ export const collectionRouter = createTRPCRouter({
         return collection;
       } catch (e) {
         console.log(e);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to remove album from collection",
+        });
       }
     }),
 });

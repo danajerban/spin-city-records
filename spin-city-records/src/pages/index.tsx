@@ -17,30 +17,28 @@ export default function Home() {
     error: recentlyAddedQueryError,
     isLoading: recentlyAddedQueryIsLoading,
     isError: recentlyAddedQueryIsError,
-  } = api.collections.getById.useQuery({ id: recentlyAddedId });
+  } = api.collections.getById.useQuery(
+    { id: recentlyAddedId },
+    {
+      retry: 1,
+      retryDelay: 1000,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   const {
     data: newReleasesQueryData,
     error: newReleasesQueryError,
     isLoading: newReleasesQueryIsLoading,
     isError: newReleasesQueryIsError,
-  } = api.collections.getById.useQuery({ id: newReleasesId });
-
-  // Error Handling
-  if (recentlyAddedQueryIsError || newReleasesQueryIsError) {
-    return (
-      <NextError
-        title={
-          recentlyAddedQueryError?.message || newReleasesQueryError?.message
-        }
-        statusCode={
-          recentlyAddedQueryError?.data?.httpStatus ??
-          newReleasesQueryError?.data?.httpStatus ??
-          500
-        }
-      />
-    );
-  }
+  } = api.collections.getById.useQuery(
+    { id: newReleasesId },
+    {
+      retry: 1,
+      retryDelay: 1000,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   // Default empty collection when data is undefined
   const defaultCollection: Collection = {
@@ -107,6 +105,68 @@ export default function Home() {
   const recentlyAddedCollection = transformCollection(recentlyAddedQueryData);
   const newReleasesCollection = transformCollection(newReleasesQueryData);
 
+  // Show loading state for the entire page if either query is loading
+  if (recentlyAddedQueryIsLoading || newReleasesQueryIsLoading) {
+    return (
+      <Layout>
+        <SplideCarousel />
+        <section className="mx-auto flex w-full flex-col items-center justify-center overflow-hidden">
+          <h1
+            className={`mt-8 w-full text-center text-2xl text-white sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl ${serif.className}`}
+          >
+            SHOP MUSIC
+          </h1>
+          <div className="my-8 w-5/6 border-b border-gray-600" />
+          <MusicSection
+            title={"RECENTLY ADDED"}
+            collection={defaultCollection}
+            loading={true}
+          />
+          <div className="my-8 w-5/6 border-b border-gray-600" />
+          <MusicSection
+            title={"NEW RELEASES"}
+            collection={defaultCollection}
+            loading={true}
+          />
+          <div className="my-8 w-5/6 border-b border-gray-600" />
+          <MusicSection
+            title={"BEST SELLERS"}
+            collection={defaultCollection}
+            loading={true}
+          />
+          <div className="my-4" />
+        </section>
+      </Layout>
+    );
+  }
+
+  // Handle 404 errors (collection not found) by showing empty sections
+  const isNotFound = (error: typeof recentlyAddedQueryError) => {
+    return error?.data?.httpStatus === 404;
+  };
+
+  const recentlyAddedNotFound = isNotFound(recentlyAddedQueryError);
+  const newReleasesNotFound = isNotFound(newReleasesQueryError);
+
+  // Show error state only for non-404 errors
+  if (
+    (recentlyAddedQueryIsError && !recentlyAddedNotFound) ||
+    (newReleasesQueryIsError && !newReleasesNotFound)
+  ) {
+    return (
+      <NextError
+        title={
+          recentlyAddedQueryError?.message || newReleasesQueryError?.message
+        }
+        statusCode={
+          recentlyAddedQueryError?.data?.httpStatus ??
+          newReleasesQueryError?.data?.httpStatus ??
+          500
+        }
+      />
+    );
+  }
+
   return (
     <Layout>
       <SplideCarousel />
@@ -119,19 +179,25 @@ export default function Home() {
         <div className="my-8 w-5/6 border-b border-gray-600" />
         <MusicSection
           title={"RECENTLY ADDED"}
-          collection={recentlyAddedCollection}
+          collection={
+            recentlyAddedNotFound ? defaultCollection : recentlyAddedCollection
+          }
           loading={recentlyAddedQueryIsLoading}
         />
         <div className="my-8 w-5/6 border-b border-gray-600" />
         <MusicSection
           title={"NEW RELEASES"}
-          collection={newReleasesCollection}
+          collection={
+            newReleasesNotFound ? defaultCollection : newReleasesCollection
+          }
           loading={newReleasesQueryIsLoading}
         />
         <div className="my-8 w-5/6 border-b border-gray-600" />
         <MusicSection
           title={"BEST SELLERS"}
-          collection={recentlyAddedCollection}
+          collection={
+            recentlyAddedNotFound ? defaultCollection : recentlyAddedCollection
+          }
           loading={recentlyAddedQueryIsLoading}
         />
         <div className="my-4" />
